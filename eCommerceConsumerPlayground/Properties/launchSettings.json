@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "eCommerceConsumerPlayground": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
