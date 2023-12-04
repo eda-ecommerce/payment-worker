@@ -9,12 +9,12 @@ namespace ECommerceConsumerPlayground.Services;
 /// <summary>
 /// Implementation of User objects in database
 /// </summary>
-public class UserStore : IUserStore
+public class PaymentStore : IPaymentStore
 {
-    private readonly ILogger<UserStore> _logger;
+    private readonly ILogger<PaymentStore> _logger;
     private readonly AppDbContext _context;
 
-    public UserStore(ILogger<UserStore> logger, AppDbContext context)
+    public PaymentStore(ILogger<PaymentStore> logger, AppDbContext context)
     {
         _logger = logger;
         _context = context;
@@ -29,7 +29,7 @@ public class UserStore : IUserStore
             var paymentExists = await CheckIfEntryAlreadyExistsAsync(payment);
             if (paymentExists)
             {
-                _logger.LogInformation($"User object '{payment.Username}' already exists in database. No new persistence.");
+                _logger.LogInformation($"User object '{payment.PaymentId}' already exists in database. No new persistence.");
                 return;
             }
 
@@ -46,9 +46,10 @@ public class UserStore : IUserStore
         }
     }
 
-    private async Task<bool> CheckIfEntryAlreadyExistsAsync(Payment payment)
+    public async Task<bool> CheckIfEntryAlreadyExistsAsync(Payment payment)
     {
-        var paymentExists = await _context.Payments.AnyAsync(u => u.Username == payment.Username);
+        var paymentExists = await _context.Payments.AnyAsync(u => u.OrderId == payment.OrderId);
+        
         return paymentExists;
     }
 }

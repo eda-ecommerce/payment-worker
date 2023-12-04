@@ -21,8 +21,8 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
         // DI services
         services.AddScoped<App>();
-        services.AddScoped<IUserStore, UserStore>();
-        services.AddScoped<IConsumerService, ConsumerService>();
+        services.AddScoped<IPaymentStore, PaymentStore>();
+        services.AddScoped<IWorkerService, WorkerService>();
 
         // Definition of startup service
         services.AddHostedService<App>();

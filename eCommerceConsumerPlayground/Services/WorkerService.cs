@@ -5,24 +5,26 @@ using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Runtime.InteropServices.JavaScript;
+using paymentWorker.Models;
 
 namespace ECommerceConsumerPlayground.Services;
 
 /// <summary>
 /// Implementation of Kafka Consumer Service
 /// </summary>
-public class ConsumerService : IConsumerService
+public class WorkerService : IWorkerService
 {
-    private readonly ILogger<ConsumerService> _logger;
+    private readonly ILogger<WorkerService> _logger;
     private readonly IConsumer<Ignore, string> _kafkaConsumer;
     private readonly IConfiguration _configuration;
-    private readonly IUserStore _userStore;
+    private readonly IPaymentStore _paymentStore;
     private readonly string KAFKA_BROKER;
     private readonly string KAFKA_TOPIC1;
     private readonly string KAFKA_GROUPID;
     private readonly string KAFKA_TOPIC2;
 
-    public ConsumerService(ILogger<ConsumerService> logger, IConfiguration configuration, IUserStore userStore)
+    public WorkerService(ILogger<WorkerService> logger, IConfiguration configuration, IPaymentStore paymentStore)
     {
         _configuration = configuration;
         // Get appsettings and set as static variable
@@ -46,7 +48,7 @@ public class ConsumerService : IConsumerService
         
         _logger = logger;
         _kafkaConsumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
-        _userStore = userStore;
+        _paymentStore = paymentStore;
     }
 
 
@@ -69,28 +71,40 @@ public class ConsumerService : IConsumerService
                 {
                     var consumeResult = _kafkaConsumer.Consume(cancellationToken);
                     
-//                     
                     // Handle message...
-                    var user = JsonSerializer.Deserialize<Payment>(consumeResult.Message.Value)!;
+                    var order = JsonSerializer.Deserialize<Order>(consumeResult.Message.Value)!;
 
-                    // Produce messages
-                    ProducerConfig configProducer = new ProducerConfig
+                    var payment = new Payment()
                     {
-                        BootstrapServers = KAFKA_BROKER,
-                        ClientId = Dns.GetHostName()
+                        PaymentId = Guid.NewGuid(),
+                        OrderId = order.OrderId,
+                        PaymentDate = null,
+                        CreatedDate = DateOnly.FromDateTime(DateTime.Now),
+                        Status = Status.Unpayd
+                        
                     };
 
-                    using var producer = new ProducerBuilder<Null, string>(configProducer).Build();
-
-                    var result = await producer.ProduceAsync(KAFKA_TOPIC2, new Message<Null, string>
+                    // if statment is required so that a message is only produced if an order does not yet exist.
+                    if (!await _paymentStore.CheckIfEntryAlreadyExistsAsync(payment))
                     {
-                        Value = JsonSerializer.Serialize<Payment>(user)
-                    });
+                        // Produce messages
+                        ProducerConfig configProducer = new ProducerConfig
+                        {
+                            BootstrapServers = KAFKA_BROKER,
+                            ClientId = Dns.GetHostName()
+                        };
 
+                        using var producer = new ProducerBuilder<Null, string>(configProducer).Build();
+
+                        var result = await producer.ProduceAsync(KAFKA_TOPIC2, new Message<Null, string>
+                        {
+                            Value = JsonSerializer.Serialize<Payment>(payment)
+                        });
+                    }
 
 
                     // Persistence
-                    await _userStore.SaveDataAsync(user);
+                    await _paymentStore.SaveDataAsync(payment);
                 }
                 catch (ConsumeException e)
                 {

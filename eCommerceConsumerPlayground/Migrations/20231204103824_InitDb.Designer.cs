@@ -9,10 +9,10 @@ using eCommerceConsumerPlayground.Models;
 
 #nullable disable
 
-namespace eCommerceConsumerPlayground.Migrations
+namespace paymentworker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231110123312_InitDb")]
+    [Migration("20231204103824_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -20,30 +20,30 @@ namespace eCommerceConsumerPlayground.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.13")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("ECommerceConsumerPlayground.Models.Payment", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("PaymentId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Firstname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateOnly>("CreatedDate")
+                        .HasColumnType("date");
 
-                    b.Property<string>("Lastname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateOnly>("PaymentDate")
+                        .HasColumnType("date");
 
-                    b.HasKey("UserId");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("PaymentId");
 
                     b.ToTable("Payments");
                 });

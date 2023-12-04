@@ -27,9 +27,9 @@ public sealed class App : BackgroundService
 
         // Background service workaround for injecting container as scoped and not default singleton
         using IServiceScope scope = _serviceProvider.CreateScope();
-        IConsumerService imConsumerService = scope.ServiceProvider.GetRequiredService<IConsumerService>();
+        IWorkerService imWorkerService = scope.ServiceProvider.GetRequiredService<IWorkerService>();
         // Begin loop
-        await imConsumerService.ConsumerLoopAsync(cancellationToken);
+        await imWorkerService.ConsumerLoopAsync(cancellationToken);
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)
