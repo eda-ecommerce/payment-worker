@@ -32,9 +32,7 @@ public class PaymentStore : IPaymentStore
                 _logger.LogInformation($"User object '{payment.PaymentId}' already exists in database. No new persistence.");
                 return;
             }
-
-
-
+            
             // If not already exists, than persist
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();

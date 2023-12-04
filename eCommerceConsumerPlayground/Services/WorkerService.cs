@@ -80,7 +80,8 @@ public class WorkerService : IWorkerService
                         OrderId = order.OrderId,
                         PaymentDate = null,
                         CreatedDate = DateOnly.FromDateTime(DateTime.Now),
-                        Status = Status.Unpayed
+                        Status = Status.Unpayed,
+                        Type = "created"
                         
                     };
 
