@@ -72,12 +72,12 @@ public class WorkerService : IWorkerService
                     var consumeResult = _kafkaConsumer.Consume(cancellationToken);
                     
                     // Handle message...
-                    var order = JsonSerializer.Deserialize<Order>(consumeResult.Message.Value)!;
+                    var order = JsonSerializer.Deserialize<KafkaSchemaOrder>(consumeResult.Message.Value)!;
 
                     var payment = new Payment()
                     {
                         PaymentId = Guid.NewGuid(),
-                        OrderId = order.OrderId,
+                        OrderId = order.Order.OrderId,
                         PaymentDate = null,
                         CreatedDate = DateOnly.FromDateTime(DateTime.Now),
                         Status = Status.Unpayed,
