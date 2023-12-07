@@ -18,5 +18,4 @@ public class Payment
     public DateOnly? PaymentDate { get; set; }
     public DateOnly CreatedDate { get; set; }
     public Status Status { get; set; } 
-    public string Type { get; set; }
 }

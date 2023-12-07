@@ -80,9 +80,16 @@ public class WorkerService : IWorkerService
                         OrderId = order.Order.OrderId,
                         PaymentDate = null,
                         CreatedDate = DateOnly.FromDateTime(DateTime.Now),
-                        Status = Status.Unpayed,
-                        Type = "created"
-                        
+                        Status = Status.Unpayed
+
+                    };
+
+                    var kafkaPayment = new KafkaSchemaPayment()
+                    {
+                        Source = "Payment-Service",
+                        Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds(),
+                        Type = "created",
+                        Payment = payment
                     };
 
                     // if statment is required so that a message is only produced if an order does not yet exist.
@@ -99,7 +106,7 @@ public class WorkerService : IWorkerService
 
                         var result = await producer.ProduceAsync(KAFKA_TOPIC2, new Message<Null, string>
                         {
-                            Value = JsonSerializer.Serialize<Payment>(payment)
+                            Value = JsonSerializer.Serialize<KafkaSchemaPayment>(kafkaPayment)
                         });
                     }
 
