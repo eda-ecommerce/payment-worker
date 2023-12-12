@@ -7,15 +7,15 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["eCommerceConsumerPlayground/eCommerceConsumerPlayground.csproj", "eCommerceConsumerPlayground/"]
-RUN dotnet restore "./eCommerceConsumerPlayground/./eCommerceConsumerPlayground.csproj"
+COPY ["eCommerceConsumerPlayground/payment-worker.csproj", "eCommerceConsumerPlayground/"]
+RUN dotnet restore "./eCommerceConsumerPlayground/./payment-worker.csproj"
 COPY . .
 WORKDIR "/src/eCommerceConsumerPlayground"
-RUN dotnet build "./eCommerceConsumerPlayground.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./payment-worker.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./eCommerceConsumerPlayground.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./payment-worker.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
