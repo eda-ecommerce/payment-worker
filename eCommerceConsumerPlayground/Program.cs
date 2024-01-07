@@ -14,7 +14,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
         IConfiguration configuration = hostContext.Configuration;
 
         // Read appsettings
-        var connectionstring = configuration.GetConnectionString("SqlServer");
+        var connectionstring = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("DBSTRING")) ? Environment.GetEnvironmentVariable("DBSTRING") : configuration.GetConnectionString("SqlServer");
         // DbContext
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionstring));

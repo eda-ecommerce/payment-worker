@@ -28,10 +28,10 @@ public class WorkerService : IWorkerService
     {
         _configuration = configuration;
         // Get appsettings and set as static variable
-        KAFKA_BROKER = _configuration.GetValue<string>("Kafka:Broker")!;
-        KAFKA_TOPIC1 = _configuration.GetValue<string>("Kafka:Topic1")!;
-        KAFKA_TOPIC2 = _configuration.GetValue<string>("Kafka:Topic2")!;
-        KAFKA_GROUPID = _configuration.GetValue<string>("Kafka:GroupId")!;
+        KAFKA_BROKER = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("KAFKABROKER")) ? Environment.GetEnvironmentVariable("KAFKABROKER") : _configuration.GetValue<string>("Kafka:Broker");
+        KAFKA_TOPIC1 = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("KAFKATOPIC1")) ? Environment.GetEnvironmentVariable("KAFKATOPIC1") : _configuration.GetValue<string>("Kafka:Topic1");
+        KAFKA_TOPIC2 = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("KAFKATOPIC2")) ? Environment.GetEnvironmentVariable("KAFKATOPIC2") : _configuration.GetValue<string>("Kafka:Topic2");
+        KAFKA_GROUPID = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("KAFKAGROUPID")) ? Environment.GetEnvironmentVariable("KAFKAGROUPID") : _configuration.GetValue<string>("Kafka:GroupId");
 
         //KAFKA_BROKER = "localhost:29092";
         //KAFKA_GROUPID = "ecommerce-gp";
