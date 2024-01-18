@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Runtime.InteropServices.JavaScript;
+using System.Text;
 using paymentWorker.Models;
 
 namespace ECommerceConsumerPlayground.Services;
@@ -57,7 +58,6 @@ public class WorkerService : IWorkerService
         _kafkaConsumer.Subscribe(new string[]
         {
             KAFKA_TOPIC1,
-            
         });
         
         // Try and catch to ensure the consumer leaves the group cleanly and final offsets are committed.
@@ -72,26 +72,17 @@ public class WorkerService : IWorkerService
                     var consumeResult = _kafkaConsumer.Consume(cancellationToken);
                     
                     // Handle message...
-                    var order = JsonSerializer.Deserialize<KafkaSchemaOrder>(consumeResult.Message.Value)!;
+                    var order = JsonSerializer.Deserialize<Order>(consumeResult.Message.Value)!;
 
                     var payment = new Payment()
                     {
                         PaymentId = Guid.NewGuid(),
-                        OrderId = order.Order.OrderId,
+                        OrderId = order.OrderId,
                         PaymentDate = null,
                         CreatedDate = DateOnly.FromDateTime(DateTime.Now),
                         Status = Status.Unpayed
-
                     };
-
-                    var kafkaPayment = new KafkaSchemaPayment()
-                    {
-                        Source = "Payment-Service",
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds(),
-                        Type = "created",
-                        Payment = payment
-                    };
-
+                    
                     // if statment is required so that a message is only produced if an order does not yet exist.
                     if (!await _paymentStore.CheckIfEntryAlreadyExistsAsync(payment))
                     {
@@ -101,18 +92,28 @@ public class WorkerService : IWorkerService
                             BootstrapServers = KAFKA_BROKER,
                             ClientId = Dns.GetHostName()
                         };
+                        
+                        // Create Kafka Header
+                        var header = new Headers();
+                        header.Add("Source", Encoding.UTF8.GetBytes("payment"));
+                        header.Add("Timestamp", Encoding.UTF8.GetBytes(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()));
+                        header.Add("Operation", Encoding.UTF8.GetBytes("created"));
+
 
                         using var producer = new ProducerBuilder<Null, string>(configProducer).Build();
 
                         var result = await producer.ProduceAsync(KAFKA_TOPIC2, new Message<Null, string>
                         {
-                            Value = JsonSerializer.Serialize<KafkaSchemaPayment>(kafkaPayment)
+                            Value = JsonSerializer.Serialize<Payment>(payment),
+                            Headers = header
                         });
+                        _logger.LogInformation($" Kafka message was produced for payment: {payment.PaymentId}");
                     }
 
 
                     // Persistence
                     await _paymentStore.SaveDataAsync(payment);
+                    _logger.LogInformation($" Payment stored: {payment.PaymentId}");
                 }
                 catch (ConsumeException e)
                 {
