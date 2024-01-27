@@ -29,4 +29,15 @@ using IHost host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
+using (var scope = host.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AppDbContext>();
+    if (context.Database.GetPendingMigrations().Any())
+    {
+        context.Database.Migrate();
+    }
+}
+
 await host.RunAsync();
