@@ -1,12 +1,10 @@
-﻿using System.Diagnostics;
-using eCommerceConsumerPlayground.Models;
+﻿using eCommerceConsumerPlayground.Models;
 using ECommerceConsumerPlayground.Services;
 using ECommerceConsumerPlayground.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
