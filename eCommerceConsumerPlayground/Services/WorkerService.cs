@@ -5,7 +5,6 @@ using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using paymentWorker.Models;
 
@@ -46,7 +45,6 @@ public class WorkerService : IWorkerService
         _kafkaConsumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
         _paymentStore = paymentStore;
     }
-
 
     public async Task ConsumerLoopAsync(CancellationToken cancellationToken)
     {
@@ -131,12 +129,6 @@ public class WorkerService : IWorkerService
             return (false, null);
         }
     }
-
-    // public Order DeserializeKafkaMessage(string consumeResult)
-    // {
-    //     var order = JsonSerializer.Deserialize<Order>(consumeResult)!;
-    //     return order;
-    // }
     
     private async void SendKafkaMessageForUpdatePayment(Payment payment)
     {

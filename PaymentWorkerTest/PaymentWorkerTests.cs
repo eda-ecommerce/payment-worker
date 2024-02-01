@@ -1,4 +1,3 @@
-using Castle.Core.Configuration;
 using Confluent.Kafka;
 using ECommerceConsumerPlayground.Services;
 using ECommerceConsumerPlayground.Services.Interfaces;
@@ -6,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace PaymentWorkerTest;
 

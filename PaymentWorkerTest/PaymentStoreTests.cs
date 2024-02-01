@@ -55,9 +55,9 @@ public class PaymentStoreTests
                 It.Is<LogLevel>(logLevel => logLevel == LogLevel.Information),
                 It.Is<EventId>(eventId => eventId.Id == 0),
                 It.Is<It.IsAnyType>((@object, @type) => @object.ToString() == $@"Payment with Id: '{payment1.PaymentId}' successfully saved in database.
-AccountName: {payment1.OrderId}
-Domain: {payment1.CreatedDate}
-AccountDisabled: {payment1.Status}" 
+OrderId: {payment1.OrderId}
+CreatedDate: {payment1.CreatedDate}
+Status: {payment1.Status}" 
                                                         && @type.Name == "FormattedLogValues"),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),

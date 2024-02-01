@@ -37,9 +37,9 @@ public class PaymentStore : IPaymentStore
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
             _logger.LogInformation($@"Payment with Id: '{payment.PaymentId}' successfully saved in database.
-AccountName: {payment.OrderId}
-Domain: {payment.CreatedDate}
-AccountDisabled: {payment.Status}");
+OrderId: {payment.OrderId}
+CreatedDate: {payment.CreatedDate}
+Status: {payment.Status}");
         }
         catch (Exception e)
         {
