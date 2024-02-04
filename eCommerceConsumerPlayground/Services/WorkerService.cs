@@ -5,7 +5,6 @@ using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using paymentWorker.Models;
 
@@ -34,11 +33,6 @@ public class WorkerService : IWorkerService
         KAFKA_TOPIC2 = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("KAFKATOPIC2")) ? Environment.GetEnvironmentVariable("KAFKATOPIC2") : _configuration.GetValue<string>("Kafka:Topic2");
         KAFKA_GROUPID = !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("KAFKAGROUPID")) ? Environment.GetEnvironmentVariable("KAFKAGROUPID") : _configuration.GetValue<string>("Kafka:GroupId");
 
-        //KAFKA_BROKER = "localhost:29092";
-        //KAFKA_GROUPID = "ecommerce-gp";
-        //KAFKA_TOPIC1 = "test-1";
-        //KAFKA_TOPIC2 = "payment";
-
         var consumerConfig = new ConsumerConfig
         {
             BootstrapServers = KAFKA_BROKER,
@@ -51,7 +45,6 @@ public class WorkerService : IWorkerService
         _kafkaConsumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
         _paymentStore = paymentStore;
     }
-
 
     public async Task ConsumerLoopAsync(CancellationToken cancellationToken)
     {
@@ -70,10 +63,10 @@ public class WorkerService : IWorkerService
                 try
                 {
                     var consumeResult = _kafkaConsumer.Consume(cancellationToken);
-                    
-                    // Handle message...
-                    var order = JsonSerializer.Deserialize<Order>(consumeResult.Message.Value)!;
 
+                    // Handle message...
+                    var (isValid,order) = DeserializeKafkaMessage(consumeResult);
+                   
                     var payment = new Payment()
                     {
                         PaymentId = Guid.NewGuid(),
@@ -83,33 +76,11 @@ public class WorkerService : IWorkerService
                         Status = Status.Unpayed
                     };
                     
-                    // if statment is required so that a message is only produced if an order does not yet exist.
+                    // if statement is required so that a message is only produced if an order does not yet exist.
                     if (!await _paymentStore.CheckIfEntryAlreadyExistsAsync(payment))
                     {
-                        // Produce messages
-                        ProducerConfig configProducer = new ProducerConfig
-                        {
-                            BootstrapServers = KAFKA_BROKER,
-                            ClientId = Dns.GetHostName()
-                        };
-                        
-                        // Create Kafka Header
-                        var header = new Headers();
-                        header.Add("Source", Encoding.UTF8.GetBytes("payment"));
-                        header.Add("Timestamp", Encoding.UTF8.GetBytes(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()));
-                        header.Add("Operation", Encoding.UTF8.GetBytes("created"));
-
-
-                        using var producer = new ProducerBuilder<Null, string>(configProducer).Build();
-
-                        var result = await producer.ProduceAsync(KAFKA_TOPIC2, new Message<Null, string>
-                        {
-                            Value = JsonSerializer.Serialize<Payment>(payment),
-                            Headers = header
-                        });
-                        _logger.LogInformation($" Kafka message was produced for payment: {payment.PaymentId}");
+                        SendKafkaMessageForUpdatePayment(payment);
                     }
-
 
                     // Persistence
                     await _paymentStore.SaveDataAsync(payment);
@@ -118,11 +89,11 @@ public class WorkerService : IWorkerService
                 catch (ConsumeException e)
                 {
                     // Consumer errors should generally be ignored (or logged) unless fatal.
-                    _logger.LogWarning(2000, $"Error on consuming Kafka Message. Reason: {e.Error.Reason}");
+                    _logger.LogWarning($"Error on consuming Kafka Message. Reason: {e.Error.Reason}");
 
                     if (e.Error.IsFatal)
                     {
-                        _logger.LogError(3000, "Fatal error on consuming Kafka Message..");
+                        _logger.LogError("Fatal error on consuming Kafka Message..");
                         break;
                     }
                 }
@@ -141,5 +112,47 @@ public class WorkerService : IWorkerService
         _logger.LogWarning(2001, "Closing Kafka (unsubscribe and close events)..");
         _kafkaConsumer.Unsubscribe();
         _kafkaConsumer.Close();
+    }
+
+    public (bool, Order?) DeserializeKafkaMessage(ConsumeResult<Ignore, string> consumeResult)
+    {
+        Order? order = null;
+        try
+        {
+            order = JsonSerializer.Deserialize<Order>(consumeResult.Message.Value);
+            return (true, order);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(205, "Message could not be deserialized into the default model.");
+            _logger.LogWarning(205, $"Exception: {ex.Message}");
+            return (false, null);
+        }
+    }
+    
+    private async void SendKafkaMessageForUpdatePayment(Payment payment)
+    {
+        _logger.LogInformation($" Create Kafka message for payment: {payment.PaymentId}");
+        // Produce messages
+        ProducerConfig configProducer = new ProducerConfig
+        {
+            BootstrapServers = KAFKA_BROKER,
+            ClientId = Dns.GetHostName()
+        };
+                        
+        // Create Kafka Header
+        var header = new Headers();
+        header.Add("Source", Encoding.UTF8.GetBytes("payment"));
+        header.Add("Timestamp", Encoding.UTF8.GetBytes(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()));
+        header.Add("Operation", Encoding.UTF8.GetBytes("created"));
+                        
+        using var producer = new ProducerBuilder<Null, string>(configProducer).Build();
+
+        var result = await producer.ProduceAsync(KAFKA_TOPIC2, new Message<Null, string>
+        {
+            Value = JsonSerializer.Serialize<Payment>(payment),
+            Headers = header
+        });
+        _logger.LogInformation($" Kafka message was produced for payment: {payment.PaymentId}");
     }
 }

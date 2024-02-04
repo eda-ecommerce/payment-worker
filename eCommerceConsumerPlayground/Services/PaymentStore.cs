@@ -29,14 +29,17 @@ public class PaymentStore : IPaymentStore
             var paymentExists = await CheckIfEntryAlreadyExistsAsync(payment);
             if (paymentExists)
             {
-                _logger.LogInformation($"User object '{payment.PaymentId}' already exists in database. No new persistence.");
+                _logger.LogInformation($"Payment with Id: '{payment.PaymentId}' already exists in database. No new persistence.");
                 return;
             }
             
             // If not already exists, than persist
             await _context.Payments.AddAsync(payment);
             await _context.SaveChangesAsync();
-            
+            _logger.LogInformation($@"Payment with Id: '{payment.PaymentId}' successfully saved in database.
+OrderId: {payment.OrderId}
+CreatedDate: {payment.CreatedDate}
+Status: {payment.Status}");
         }
         catch (Exception e)
         {

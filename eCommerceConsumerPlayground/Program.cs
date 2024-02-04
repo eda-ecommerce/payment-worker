@@ -12,7 +12,6 @@ using static System.Net.Mime.MediaTypeNames;
 
 String? connectionstring = "";
 
-
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
