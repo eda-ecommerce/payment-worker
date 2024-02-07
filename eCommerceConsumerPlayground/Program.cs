@@ -43,7 +43,10 @@ using (var scope = host.Services.CreateScope())
 
     context.Database.SetConnectionString(sqlConnectionStringBuilder.ConnectionString);
 
-
+    Console.WriteLine("DB connectionString: " + sqlConnectionStringBuilder.ConnectionString);
+    Console.WriteLine("KAFKABROKER: " + Environment.GetEnvironmentVariable("KAFKABROKER"));
+    Console.WriteLine("KAFKATOPIC1: " + Environment.GetEnvironmentVariable("KAFKATOPIC1"));
+    Console.WriteLine("KAFKATOPIC2: " + Environment.GetEnvironmentVariable("KAFKATOPIC2"));
     Console.WriteLine("Waiting for DB connection...");
 
     while (!context.Database.CanConnect())
@@ -54,6 +57,7 @@ using (var scope = host.Services.CreateScope())
     }
 
     Console.WriteLine("DB connected");
+    
 
     context.Database.SetConnectionString(connectionstring);
 
