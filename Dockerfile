@@ -3,11 +3,11 @@
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
 USER app
 WORKDIR /app
-ENV DBSTRING "Data Source=192.168.178.130,1433;Initial Catalog=Proverb;Persist Security Info=True;User ID=SA;Password=yourStrong(!)Password;TrustServerCertificate=True"
-ENV KAFKABROKER "localhost:29092"
-ENV KAFKATOPIC1 "order"
-ENV KAFKATOPIC2 "payment"
-ENV KAFKAGROUPID "ecommerce-gp"
+#ENV DBSTRING "Data Source=192.168.178.130,1433;Initial Catalog=Proverb;Persist Security Info=True;User ID=SA;Password=yourStrong(!)Password;TrustServerCertificate=True"
+#ENV KAFKABROKER "localhost:29092"
+#ENV KAFKATOPIC1 "order"
+#ENV KAFKATOPIC2 "payment"
+#ENV KAFKAGROUPID "ecommerce-gp"
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
