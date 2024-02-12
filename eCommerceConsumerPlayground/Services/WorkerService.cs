@@ -48,15 +48,15 @@ public class WorkerService : IWorkerService
 
     public async Task ConsumerLoopAsync(CancellationToken cancellationToken)
     {
-        var payment3 = new Payment()
-        {
-            PaymentId = Guid.NewGuid(),
-            PaymentDate = null,
-            OrderId = Guid.NewGuid(),
-            Status = Status.Unpayed,
-            CreatedDate = DateOnly.FromDateTime(DateTime.Now)
-        };
-        _paymentStore.SaveDataAsync(payment3);
+        // var payment3 = new Payment()
+        // {
+        //     PaymentId = Guid.NewGuid(),
+        //     PaymentDate = null,
+        //     OrderId = Guid.NewGuid(),
+        //     Status = Status.Unpayed,
+        //     CreatedDate = DateOnly.FromDateTime(DateTime.Now)
+        // };
+        // _paymentStore.SaveDataAsync(payment3);
         
         _kafkaConsumer.Subscribe(new string[]
         {
