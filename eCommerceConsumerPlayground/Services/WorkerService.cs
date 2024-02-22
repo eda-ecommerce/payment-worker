@@ -158,9 +158,9 @@ public class WorkerService : IWorkerService
                         
         // Create Kafka Header
         var header = new Headers();
-        header.Add("Source", Encoding.UTF8.GetBytes("payment"));
-        header.Add("Timestamp", Encoding.UTF8.GetBytes(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()));
-        header.Add("Operation", Encoding.UTF8.GetBytes("created"));
+        header.Add("source", Encoding.UTF8.GetBytes("payment"));
+        header.Add("timestamp", Encoding.UTF8.GetBytes(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()));
+        header.Add("operation", Encoding.UTF8.GetBytes("created"));
                         
         using var producer = new ProducerBuilder<Null, string>(configProducer).Build();
 
