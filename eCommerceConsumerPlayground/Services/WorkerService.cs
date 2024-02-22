@@ -73,28 +73,34 @@ public class WorkerService : IWorkerService
                 try
                 {
                     var consumeResult = _kafkaConsumer.Consume(cancellationToken);
+                    var orderOperation = Encoding.UTF8.GetString(consumeResult.Headers.GetLastBytes("Operation"));
+                    //Console.WriteLine(orderOperation);
 
-                    // Handle message...
-                    var (isValid,order) = DeserializeKafkaMessage(consumeResult);
-                   
-                    var payment = new Payment()
+                    if (orderOperation == "created")
                     {
-                        PaymentId = Guid.NewGuid(),
-                        OrderId = order.OrderId,
-                        PaymentDate = null,
-                        CreatedDate = DateOnly.FromDateTime(DateTime.Now),
-                        Status = Status.Unpayed
-                    };
-                    
-                    // if statement is required so that a message is only produced if an order does not yet exist.
-                    if (!await _paymentStore.CheckIfEntryAlreadyExistsAsync(payment))
-                    {
-                        SendKafkaMessageForUpdatePayment(payment);
+                        // Handle message...
+                        var (isValid,order) = DeserializeKafkaMessage(consumeResult);
+                       
+                        var payment = new Payment()
+                        {
+                            PaymentId = Guid.NewGuid(),
+                            OrderId = order.OrderId,
+                            PaymentDate = null,
+                            CreatedDate = DateOnly.FromDateTime(DateTime.Now),
+                            Status = Status.Unpayed
+                        };
+                        
+                        // if statement is required so that a message is only produced if an order does not yet exist.
+                        if (!await _paymentStore.CheckIfEntryAlreadyExistsAsync(payment))
+                        {
+                            SendKafkaMessageForUpdatePayment(payment);
+                        }
+
+                        // Persistence
+                        await _paymentStore.SaveDataAsync(payment);
+                        _logger.LogInformation($" Payment stored: {payment.PaymentId}");
                     }
 
-                    // Persistence
-                    await _paymentStore.SaveDataAsync(payment);
-                    _logger.LogInformation($" Payment stored: {payment.PaymentId}");
                 }
                 catch (ConsumeException e)
                 {
