@@ -17,7 +17,7 @@ namespace paymentworker.Migrations
                 {
                     PaymentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PaymentDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    PaymentDate = table.Column<DateOnly>(type: "date", nullable: false),
                     CreatedDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
