@@ -74,7 +74,7 @@ public class WorkerService : IWorkerService
                 {
                     var consumeResult = _kafkaConsumer.Consume(cancellationToken);
                     var orderOperation = Encoding.UTF8.GetString(consumeResult.Headers.GetLastBytes("operation"));
-                    Console.WriteLine("Operation:");
+                    Console.WriteLine("operation:");
                     Console.WriteLine(orderOperation);
 
                     if (orderOperation == "created")
@@ -159,9 +159,9 @@ public class WorkerService : IWorkerService
                         
         // Create Kafka Header
         var header = new Headers();
-        header.Add("Source", Encoding.UTF8.GetBytes("payment"));
-        header.Add("Timestamp", Encoding.UTF8.GetBytes(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()));
-        header.Add("Operation", Encoding.UTF8.GetBytes("created"));
+        header.Add("source", Encoding.UTF8.GetBytes("payment"));
+        header.Add("timestamp", Encoding.UTF8.GetBytes(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()));
+        header.Add("operation", Encoding.UTF8.GetBytes("created"));
                         
         using var producer = new ProducerBuilder<Null, string>(configProducer).Build();
 
