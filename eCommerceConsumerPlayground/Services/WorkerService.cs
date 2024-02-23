@@ -73,7 +73,7 @@ public class WorkerService : IWorkerService
                 try
                 {
                     var consumeResult = _kafkaConsumer.Consume(cancellationToken);
-                    var orderOperation = Encoding.UTF8.GetString(consumeResult.Headers.GetLastBytes("Operation"));
+                    var orderOperation = Encoding.UTF8.GetString(consumeResult.Headers.GetLastBytes("operation"));
                     //Console.WriteLine(orderOperation);
 
                     if (orderOperation == "created")
