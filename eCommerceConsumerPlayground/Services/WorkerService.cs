@@ -88,7 +88,7 @@ public class WorkerService : IWorkerService
                     {
                         Source = "Payment-Service",
                         Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds(),
-                        Operation = "created",
+                        Type = "created",
                         Payment = payment
                     };
 
